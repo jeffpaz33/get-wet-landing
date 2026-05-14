@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Get Wet</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+    /* Hero */
+    #hero { position: relative; width: 100%; height: 100vh; overflow: hidden; }
+    #hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+    /* Logo */
+    #logo-nav {
+      position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 50;
+      width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.18);
+      backdrop-filter: blur(60px) saturate(220%);
+      -webkit-backdrop-filter: blur(60px) saturate(220%);
+      border: 1px solid rgba(255,255,255,0.35);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.4);
+      cursor: pointer; text-decoration: none;
+    }
+    #logo-nav img { width: 52px; height: 52px; object-fit: contain; }
+
+    /* Email card */
+    #email-card-wrap {
+      position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 448px; padding: 0 16px; z-index: 50;
+    }
+    #email-card {
+      position: relative; border-radius: 16px; padding: 16px 24px; overflow: hidden;
+      cursor: pointer; transition: all 0.5s;
+      background: rgba(255,255,255,0.18);
+      backdrop-filter: blur(60px) saturate(220%);
+      -webkit-backdrop-filter: blur(60px) saturate(220%);
+      border: 1px solid rgba(255,255,255,0.35);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.4);
+    }
+
+    /* Chevron */
+    #chevron-btn {
+      position: absolute; top: 16px; right: 20px; background: none; border: none;
+      cursor: pointer; transition: transform 0.5s; padding: 0;
+    }
+    #chevron-btn svg { display: block; }
+
+    /* Expandable */
+    #details-panel { overflow: hidden; transition: max-height 0.5s ease, opacity 0.5s ease; max-height: 0; opacity: 0; }
+    #details-panel.open { max-height: 300px; opacity: 1; }
+    #details-inner { padding-bottom: 16px; }
+    .details-label { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 12px; }
+    .details-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+    .details-item { font-size: 14px; margin-bottom: 6px; }
+
+    /* Card text */
+    .card-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 2px; }
+    .card-title { font-size: 16px; font-weight: 700; letter-spacing: 0.02em; margin-bottom: 4px; }
+    .card-sub { font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+
+    /* Form */
+    #subscribe-form { display: flex; gap: 8px; }
+    #email-input {
+      flex: 1; border-radius: 12px; padding: 10px 16px; font-size: 14px; outline: none;
+      transition: background 0.5s, border 0.5s, color 0.5s;
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff;
+    }
+    #email-input::placeholder { color: rgba(255,255,255,0.45); }
+    #submit-btn {
+      border-radius: 12px; padding: 10px 16px; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.5s, border 0.5s, color 0.5s; white-space: nowrap;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: rgba(255,255,255,0.9);
+    }
+    #submit-btn:active { transform: scale(0.95); }
+    #submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* On-white state */
+    .on-white #email-card {
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    .on-white .details-label { color: #9ca3af; }
+    .on-white .details-title { color: #1f2937; }
+    .on-white .details-item { color: #4b5563; }
+    .on-white .card-eyebrow { color: #9ca3af; }
+    .on-white .card-title { color: #1f2937; }
+    .on-white .card-sub { color: #4b5563; }
+    .on-white #chevron-btn svg path { stroke: #4b5563; }
+    .on-white #email-input { background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.15); color: #4b5563; }
+    .on-white #email-input::placeholder { color: rgba(75,85,99,0.5); }
+    .on-white #submit-btn { background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.15); color: #4b5563; }
+
+    /* Off-white (default) text colors */
+    .details-label { color: rgba(255,255,255,0.5); }
+    .details-title { color: #fff; }
+    .details-item { color: rgba(255,255,255,0.8); }
+    .card-eyebrow { color: rgba(255,255,255,0.5); }
+    .card-title { color: #fff; }
+    .card-sub { color: rgba(255,255,255,0.8); }
+
+    /* Mute */
+    #mute-btn {
+      position: absolute; bottom: 32px; left: 32px;
+      padding: 8px 16px; border: 1px solid #fff; color: #fff;
+      font-size: 14px; letter-spacing: 0.05em; background: transparent; cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    #mute-btn:hover { background: #fff; color: #000; }
+
+    /* Statement */
+    #statement { background: #fff; padding: 96px 40px; }
+    @media (min-width: 768px) { #statement { padding: 96px 80px; } }
+    @media (min-width: 1024px) { #statement { padding: 96px 128px; } }
+    #statement h2 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900; color: #000;
+      line-height: 1.05; letter-spacing: -0.02em; max-width: 900px;
+    }
+
+    /* Ticker */
+    #ticker-section { background: #fff; padding-bottom: 48px; overflow: hidden; }
+    #ticker-track { display: flex; width: max-content; animation: ticker 24s linear infinite; }
+    #ticker-track .ticker-set { display: flex; gap: 16px; padding-right: 16px; }
+    .ticker-img { width: 256px; height: 176px; border-radius: 16px; overflow: hidden; flex-shrink: 0; }
+    .ticker-img img { width: 100%; height: 100%; object-fit: cover; }
+    @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+    /* Footer */
+    footer { background: #fff; height: 256px; }
+  </style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <section id="hero">
+    <video id="hero-video" src="https://bfsdodnghjzsnydvqujl.supabase.co/storage/v1/object/public/medi/Care%20Package%20Vid.1%20720.mp4"
+      autoplay muted loop playsinline preload="auto"></video>
+
+    <!-- Logo -->
+    <a id="logo-nav" href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">
+      <img src="https://zescfvaufdtktbxyyhxd.supabase.co/storage/v1/object/public/site/logo.png" alt="Get Wet" />
+    </a>
+
+    <!-- Email card -->
+    <div id="email-card-wrap">
+      <div id="email-card" onclick="toggleExpand()">
+
+        <button id="chevron-btn" onclick="event.stopPropagation();toggleExpand()" aria-label="Toggle details">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 10L8 5L13 10" stroke="rgba(255,255,255,0.8)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <!-- Expandable details -->
+        <div id="details-panel">
+          <div id="details-inner">
+            <p class="details-label">Event Details</p>
+            <p class="details-title">Details Coming Soon</p>
+          </div>
+        </div>
+
+        <!-- Always visible -->
+        <p class="card-eyebrow">Next Event</p>
+        <p class="card-title">Details Coming Soon</p>
+        <p class="card-sub">Enter your email to receive updates</p>
+
+        <form id="subscribe-form" onsubmit="handleSubmit(event)" onclick="event.stopPropagation()">
+          <input id="email-input" type="email" required placeholder="you@example.com" />
+          <button id="submit-btn" type="submit">Get Updates</button>
+        </form>
+
+      </div>
+    </div>
+
+    <!-- Mute -->
+    <button id="mute-btn" onclick="toggleMute()">UNMUTE</button>
+  </section>
+
+  <!-- Statement -->
+  <section id="statement">
+    <h2>Bringing people together through water, movement, and wellness.</h2>
+  </section>
+
+  <!-- Ticker -->
+  <section id="ticker-section">
+    <div id="ticker-track">
+      <div class="ticker-set">
+        <div class="ticker-img"><img src="https://zescfvaufdtktbxyyhxd.supabase.co/storage/v1/object/public/site/ticker-2.22.53.png" alt="" /></div>
+        <div class="ticker-img"><img src="https://zescfvaufdtktbxyyhxd.supabase.co/storage/v1/object/public/site/ticker-2.23.05.png" alt="" /></div>
+        <div class="ticker-img"><img src="https://zescfvaufdtktbxyyhxd.supabase.co/storage/v1/object/public/site/ticker-2.23.36.png" alt="" /></div>
+        <div class="ticker-img"><img src="https://zescfvaufdtktbxyyhxd.supabase.co/storage/v1/object/public/site/ticker-2.24.11.png" alt="" /></div>
+        <div class="ticker-img"><img src="https://zescfvaufdtktbxyyhxd.supabase.co/storage/v1/object/public/site/ticker-2.24.45.png" alt="" /></div>
+      </div>
+      <div class="ticker-set">
+        <div class="ticker-img"><img src="https://zescfvaufdtktbxyyhxd.supabase.co/storage/v1/object/public/site/ticker-2.22.53.png" alt="" /></div>
+        <div class="ticker-img"><img src="https://zescfvaufdtktbxyyhxd.supabase.co/storage/v1/object/public/site/ticker-2.23.05.png" alt="" /></div>
+        <div class="ticker-img"><img src="https://zescfvaufdtktbxyyhxd.supabase.co/storage/v1/object/public/site/ticker-2.24.11.png" alt="" /></div>
+        <div class="ticker-img"><img src="https://zescfvaufdtktbxyyhxd.supabase.co/storage/v1/object/public/site/ticker-2.24.45.png" alt="" /></div>
+        <div class="ticker-img"><img src="https://zescfvaufdtktbxyyhxd.supabase.co/storage/v1/object/public/site/ticker-2.24.45.png" alt="" /></div>
+      </div>
+    </div>
+  </section>
+
+  <footer></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(
+      'https://zescfvaufdtktbxyyhxd.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inplc2NmdmF1ZmR0a3RieHl5aHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODEzNTIsImV4cCI6MjA5NDM1NzM1Mn0.OJVKScguqOaKRPPRhsx5XAHihTun--RgY4gEB4sOCAA'
+    );
+
+    // Video autoplay
+    const video = document.getElementById('hero-video');
+    video.setAttribute('muted', '');
+    video.defaultMuted = true;
+    video.muted = true;
+    const tryPlay = () => video.play().catch(() => {});
+    if (video.readyState >= 3) tryPlay();
+    else video.addEventListener('canplay', tryPlay, { once: true });
+    document.addEventListener('touchstart', () => tryPlay(), { once: true });
+
+    // Mute toggle
+    function toggleMute() {
+      video.muted = !video.muted;
+      document.getElementById('mute-btn').textContent = video.muted ? 'UNMUTE' : 'MUTE';
+    }
+
+    // Expand/collapse
+    let expanded = false;
+    function toggleExpand() {
+      expanded = !expanded;
+      document.getElementById('details-panel').classList.toggle('open', expanded);
+      const chevron = document.getElementById('chevron-btn');
+      chevron.style.transform = expanded ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+
+    // Scroll → on-white
+    window.addEventListener('scroll', () => {
+      document.body.classList.toggle('on-white', window.scrollY > 150);
+    }, { passive: true });
+
+    // Email submit
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const input = document.getElementById('email-input');
+      const email = input.value.trim();
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      const { error } = await db.from('subscribers').insert({ email });
+      if (error && error.code !== '23505') {
+        btn.textContent = 'Try again';
+        btn.disabled = false;
+      } else {
+        btn.textContent = "You're in!";
+        input.value = '';
+      }
+    }
+  </script>
+</body>
+</html>
