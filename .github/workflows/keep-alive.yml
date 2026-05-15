@@ -1,0 +1,18 @@
+name: Keep Supabase Active
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # runs daily at noon UTC
+  workflow_dispatch:       # lets you run it manually from GitHub if needed
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          curl -s \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inplc2NmdmF1ZmR0a3RieHl5aHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODEzNTIsImV4cCI6MjA5NDM1NzM1Mn0.OJVKScguqOaKRPPRhsx5XAHihTun--RgY4gEB4sOCAA" \
+            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inplc2NmdmF1ZmR0a3RieHl5aHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODEzNTIsImV4cCI6MjA5NDM1NzM1Mn0.OJVKScguqOaKRPPRhsx5XAHihTun--RgY4gEB4sOCAA" \
+            "https://zescfvaufdtktbxyyhxd.supabase.co/rest/v1/subscribers?select=count"
+          echo "Pinged Supabase successfully"
